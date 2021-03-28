@@ -110,10 +110,6 @@ UPDATE birds_new SET endangered = 0
 WHERE bird_id IN(1,2,4,5);
 SELECT * FROM birds_new WHERE endangered \G
 
-UPDATE birds_new SET endangered = 1
-WHERE bird_id IN(3,6);
-SELECT * FROM birds_new WHERE endangered \G
-
 ALTER TABLE birds_new
 MODIFY COLUMN endangered
 ENUM('Extinct',
@@ -125,4 +121,115 @@ ENUM('Extinct',
 'Lower Risk - Near Threatened',
 'Lower Risk - Least Concern')
 AFTER family_id;
+UPDATE birds_new
+SET endangered = 7;
+
+USE birdwatchers;
+CREATE TABLE surveys
+(survey_id INT AUTO_INCREMENT KEY,
+survey_name VARCHAR(255));
+CREATE TABLE survey_questions
+(question_id INT AUTO_INCREMENT KEY,
+survey_id INT,
+question VARCHAR(255),
+choices BLOB);
+CREATE TABLE survey_answers
+(answer_id INT AUTO_INCREMENT KEY,
+human_id INT,
+question_id INT,
+date_answered DATETIME,
+answer VARCHAR(255));
+
+INSERT INTO surveys (survey_name)
+VALUES("Favorite Birding Location");
+INSERT INTO survey_questions
+(survey_id, question, choices)
+VALUES(LAST_INSERT_ID(),
+"Whats your favorite setting for bird-watching?",
+COLUMN_CREATE('1', 'forest', '2', 'shore', '3', 'backyard') );
+INSERT INTO surveys (survey_name)
+VALUES("Preferred Birds");
+INSERT INTO survey_questions
+(survey_id, question, choices)
+VALUES(LAST_INSERT_ID(),
+"Which type of birds do you like best?",
+COLUMN_CREATE('1', 'perching', '2', 'shore', '3', 'fowl', '4', 'rapture') );
+
+SELECT COLUMN_GET(choices, 3 AS CHAR)
+AS 'Location'
+FROM survey_questions
+WHERE survey_id = 1;
+
+ALTER TABLE birds_new
+CHANGE COLUMN endangered conservation_status_id INT DEFAULT 8;
+ALTER TABLE birds_new
+ALTER conservation_status_id SET DEFAULT 7;
+
+select * from information_schema.tables where table_name="birds"
+USE rookery
+ALTER TABLE birds
+AUTO_INCREMENT = 10;
+
+CREATE TABLE birds_details
+SELECT bird_id, description
+FROM birds;
+
+RENAME TABLE rookery.birds TO rookery.birds_old,
+test.birds_new TO rookery.birds;
+
+ALTER TABLE birdwatchers.humans
+ADD INDEX human_names (name_last, name_first);
+
+ALTER TABLE conservation_status
+DROP PRIMARY KEY,
+CHANGE status_id conservation_status_id INT PRIMARY KEY AUTO_INCREMENT;
+
+--########################################################
+--		CHAPTER 5: INSERTING DATA
+--########################################################
+
+alter table books
+add column author TEXT,
+add column year TEXT;
+
+INSERT INTO books
+(title, author, year)
+VALUES('Visitation of Spirits','Randall Kenan','1989'),
+('Heart of Darkness','Joseph Conrad','1902'),
+('The Idiot','Fyodor Dostoevsky','1871');
+
+INSERT INTO bird_families
+SET scientific_name = 'Rallidae',
+order_id = 113;
+
+UPDATE bird_families, bird_orders
+SET bird_families.order_id = bird_orders.order_id
+WHERE bird_families.order_id IS NULL
+AND cornell_bird_order = bird_orders.scientific_name;
+
+--########################################################
+--		CHAPTER 6: SELECTING DATA
+--########################################################
+
+SELECT common_name, scientific_name
+FROM birds WHERE family_id = 103
+LIMIT 3;
+
+SELECT common_name, scientific_name
+FROM birds WHERE family_id = 103
+ORDER BY common_name
+LIMIT 3;
+
+SELECT * FROM bird_families 
+WHERE scientific_name IN('Rallidae','Anatidae');
+
+SELECT common_name AS 'Bird',
+bird_families.scientific_name AS 'Family'
+FROM birds, bird_families
+WHERE birds.family_id = bird_families.family_id
+AND order_id = 102
+AND common_name != ''
+ORDER BY common_name LIMIT 10;
+
+
 
