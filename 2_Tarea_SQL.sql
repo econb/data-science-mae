@@ -231,5 +231,10 @@ AND order_id = 102
 AND common_name != ''
 ORDER BY common_name LIMIT 10;
 
+SELECT * FROM birds WHERE common_name LIKE '%Golden%';
+SELECT * FROM birds WHERE common_name REGEXP 'Black|Golden';
+SELECT COUNT(*) FROM birds WHERE scientific_name LIKE '%Pluvialis%';
+
+select bird_families.scientific_name, count(*) from birds, bird_families where birds.family_id=bird_families.family_id group by bird_families.scientific_name;
 
 
